@@ -9,7 +9,7 @@ def get_private():
     private_key = account._private_key
     return private_key
 
-TG_BOT_KEY = "6"
+TG_BOT_KEY = ""
 WALLET_ADDR = ""
 WALLET_PK = get_private()
 DATABASE_FILE = "faucet.db"
