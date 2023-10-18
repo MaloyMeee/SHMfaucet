@@ -1,4 +1,5 @@
 import telebot
+import telegram
 from telegram.ext import *
 from web3 import Web3
 import sqlite3
@@ -10,12 +11,12 @@ from abi import TOKEN_ABI
 def main():
     createDataBase()
     print("Started")
-    updater = Updater(TG_BOT_KEY, use_context=True)
+    bot = telegram.Bot(token=TG_BOT_KEY)
+    updater = Updater(bot=bot, use_context=True)
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("dclaim", shm_command))
     updater.start_polling()
     updater.idle()
-
 
 def createDataBase():
     if isfile(DATABASE_FILE):
@@ -60,10 +61,10 @@ def ping_admin_dm(message):
     bot.send_message(admin_user_id, message)
 
 
-def isLowOnGas(wallet):
+def isLowOnGas(wallet, user_id):
     web3 = Web3(Web3.HTTPProvider(RPC_URL))
     balance = web3.eth.get_balance(wallet)
-    if balance < 0.003:
+    if balance < 0.003 or user_id == admin_user_id:
         return True
     return False
 
@@ -73,7 +74,7 @@ def isEligible(userId, wallet):
     conn.execute("SELECT 1 FROM faucetClaims WHERE (USER_ID = " + str(
         userId) + " OR ADDR = '" + wallet + "') AND DT > julianday('now', '-24 hours') ")
     rows = conn.fetchall()
-    if (len(rows)) == 0:
+    if (len(rows)) == 0 or userId == admin_user_id:
         return True
     return False
 
@@ -86,7 +87,7 @@ def executeNonQuery(command):
 
 
 def gimmeFunds(userId, address):
-    if not isLowOnGas(address):
+    if not isLowOnGas(address, userId):
         return "You have enough funds!"
     if not isEligible(userId, address):
         return "You have used the Faucet recently!"
