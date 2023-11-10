@@ -84,7 +84,7 @@ def isLowOnGas(wallet, userId):
 
 def delete_user_from_db(wallet):
     conn = sqlite3.connect(DATABASE_FILE).cursor()
-    conn.execute("DELETE 1 FROM faucetClaims WHERE ADDR = '" + wallet + "')")
+    conn.execute("DELETE FROM faucetClaims WHERE ADDR = '" + wallet + "'")
 
 
 def isEligible(userId, wallet):
