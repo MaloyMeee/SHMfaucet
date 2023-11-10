@@ -44,27 +44,34 @@ def getTokenBalance(account, token_addr):
     balance = contractToken.caller().balanceOf(account)
     return (w3.from_wei(balance, 'ether'))
 
-
+trying = 0
 def sendSHM(account):
     try:
         web3 = Web3(Web3.HTTPProvider(RPC_URL))
         nonce = web3.eth.get_transaction_count(WALLET_ADDR)
-        print(True)
         tx = {
             'nonce': nonce,
             'to': account,
-            'value': web3.to_wei(12, 'ether'),
-            'gas': 21000,
-            'gasPrice': web3.to_wei('7', 'gwei')}
-
+            'value': web3.to_wei(15, 'ether'),
+            'gas': 50000,
+            'gasPrice': web3.to_wei('100', 'gwei')}
         signed_tx = web3.eth.account.sign_transaction(tx, WALLET_PK)
         tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        print(True)
         return (f"Хеш транзакции: {(web3.to_hex(tx_hash))}")
     except Exception as e:
+        global trying
         ping_admin_dm(f"ERROR: {e}")
         print(f"ERROR: {e}\nContinue...")
         delete_user_from_db(account)
-        return ("Something went wrong")
+        trying+=1
+        if trying < 5:
+            sendSHM(account)
+            print("Something went wrong, i'm try again")
+        else:
+            trying = 0
+            return (f"Something went wrong")
+        
 
 
 def ping_admin_dm(message):
